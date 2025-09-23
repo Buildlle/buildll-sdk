@@ -43,7 +43,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/buildll/sdk' }
+      { icon: 'github', link: 'https://github.com/Buildlle/buildll-sdk' }
     ]
   }
 })
