@@ -1,5 +1,5 @@
 // src/provider/BuildllProvider.tsx
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 
 // src/client.ts
 var BuildllClient = class {
@@ -50,6 +50,10 @@ function buildllClient(opts) {
   return new BuildllClient(opts);
 }
 
+// src/lib/event-bus.ts
+import mitt from "mitt";
+var eventBus = mitt();
+
 // src/provider/BuildllProvider.tsx
 import { jsx } from "react/jsx-runtime";
 var BuildllContext = createContext(null);
@@ -61,6 +65,17 @@ function BuildllProvider({
   baseUrl
 }) {
   const client = buildllClient({ siteId, publicApiKey, baseUrl });
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === "SAVE_ELEMENT") {
+        eventBus.emit("SAVE_ELEMENT", event.data);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
   return /* @__PURE__ */ jsx(BuildllContext.Provider, { value: { client, editorMode: !!editorMode }, children });
 }
 function useBuildll() {
@@ -70,7 +85,7 @@ function useBuildll() {
 }
 
 // src/hooks/useContent.ts
-import { useEffect, useState } from "react";
+import { useEffect as useEffect2, useState } from "react";
 function mergeDefaults(defaults, fetched) {
   if (!fetched) return defaults;
   return { ...defaults || {}, ...fetched.data || {} };
@@ -80,7 +95,7 @@ function useContent(sectionId, options) {
   const [data, setData] = useState(options?.defaults);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  useEffect(() => {
+  useEffect2(() => {
     let mounted = true;
     setLoading(true);
     client.getContent(sectionId).then((res) => {
@@ -101,6 +116,17 @@ function useContent(sectionId, options) {
     await client.updateContent(sectionId, patch, writeToken);
     setData((prev) => ({ ...prev, ...patch }));
   }
+  useEffect2(() => {
+    const handleSave = (event) => {
+      if (event.id === sectionId) {
+        updateContent(event.content);
+      }
+    };
+    eventBus.on("SAVE_ELEMENT", handleSave);
+    return () => {
+      eventBus.off("SAVE_ELEMENT", handleSave);
+    };
+  }, [sectionId]);
   return { data, isLoading, error, updateContent: editorMode ? updateContent : void 0 };
 }
 
@@ -116,6 +142,11 @@ function Editable({
 }) {
   const ctx = useBuildll();
   const isEditor = ctx.editorMode;
+  const handleClick = () => {
+    if (isEditor) {
+      window.parent.postMessage({ type: "buildll-edit", id, contentType: type }, "*");
+    }
+  };
   if (!isEditor) {
     return /* @__PURE__ */ jsx2(Component, { "data-buildll-id": id, "data-buildll-type": type, className, ...rest, children });
   }
@@ -130,6 +161,7 @@ function Editable({
         position: "relative",
         cursor: "pointer"
       },
+      onClick: handleClick,
       ...rest,
       children
     }

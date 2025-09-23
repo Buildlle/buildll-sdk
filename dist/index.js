@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
@@ -83,6 +93,10 @@ function buildllClient(opts) {
   return new BuildllClient(opts);
 }
 
+// src/lib/event-bus.ts
+var import_mitt = __toESM(require("mitt"));
+var eventBus = (0, import_mitt.default)();
+
 // src/provider/BuildllProvider.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var BuildllContext = (0, import_react.createContext)(null);
@@ -94,6 +108,17 @@ function BuildllProvider({
   baseUrl
 }) {
   const client = buildllClient({ siteId, publicApiKey, baseUrl });
+  (0, import_react.useEffect)(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === "SAVE_ELEMENT") {
+        eventBus.emit("SAVE_ELEMENT", event.data);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BuildllContext.Provider, { value: { client, editorMode: !!editorMode }, children });
 }
 function useBuildll() {
@@ -134,6 +159,17 @@ function useContent(sectionId, options) {
     await client.updateContent(sectionId, patch, writeToken);
     setData((prev) => ({ ...prev, ...patch }));
   }
+  (0, import_react2.useEffect)(() => {
+    const handleSave = (event) => {
+      if (event.id === sectionId) {
+        updateContent(event.content);
+      }
+    };
+    eventBus.on("SAVE_ELEMENT", handleSave);
+    return () => {
+      eventBus.off("SAVE_ELEMENT", handleSave);
+    };
+  }, [sectionId]);
   return { data, isLoading, error, updateContent: editorMode ? updateContent : void 0 };
 }
 
@@ -149,6 +185,11 @@ function Editable({
 }) {
   const ctx = useBuildll();
   const isEditor = ctx.editorMode;
+  const handleClick = () => {
+    if (isEditor) {
+      window.parent.postMessage({ type: "buildll-edit", id, contentType: type }, "*");
+    }
+  };
   if (!isEditor) {
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Component, { "data-buildll-id": id, "data-buildll-type": type, className, ...rest, children });
   }
@@ -163,6 +204,7 @@ function Editable({
         position: "relative",
         cursor: "pointer"
       },
+      onClick: handleClick,
       ...rest,
       children
     }

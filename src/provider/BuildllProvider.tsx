@@ -1,5 +1,6 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { buildllClient, BuildllClient } from '../client';
+import { eventBus } from '../lib/event-bus';
 
 const BuildllContext = createContext<{ client: BuildllClient; editorMode: boolean } | null>(null);
 
@@ -17,6 +18,21 @@ export function BuildllProvider({
   children: React.ReactNode;
 }) {
   const client = buildllClient({ siteId, publicApiKey, baseUrl });
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'SAVE_ELEMENT') {
+        eventBus.emit('SAVE_ELEMENT', event.data);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
+
   return (
     <BuildllContext.Provider value={{ client, editorMode: !!editorMode }}>
       {children}

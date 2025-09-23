@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useBuildll } from '../provider/BuildllProvider';
 import type { ContentResponse } from '../types';
+import { eventBus } from '../lib/event-bus';
 
 function mergeDefaults<T>(defaults: T | undefined, fetched: ContentResponse<T> | null): T {
   if (!fetched) return defaults as T;
@@ -37,6 +38,20 @@ export function useContent<T = unknown>(
     // optimistically merge
     setData(prev => ({ ...(prev as T), ...patch } as T));
   }
+
+  useEffect(() => {
+    const handleSave = (event: any) => {
+      if (event.id === sectionId) {
+        updateContent(event.content);
+      }
+    };
+
+    eventBus.on('SAVE_ELEMENT', handleSave);
+
+    return () => {
+      eventBus.off('SAVE_ELEMENT', handleSave);
+    };
+  }, [sectionId]);
 
   return { data: (data as T), isLoading, error, updateContent: editorMode ? updateContent : undefined };
 }

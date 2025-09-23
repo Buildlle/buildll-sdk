@@ -29,6 +29,12 @@ export function Editable({
   const ctx = useBuildll();
   const isEditor = ctx.editorMode;
 
+  const handleClick = () => {
+    if (isEditor) {
+      window.parent.postMessage({ type: 'buildll-edit', id, contentType: type }, '*');
+    }
+  };
+
   if (!isEditor) {
     return (
       <Component data-buildll-id={id} data-buildll-type={type} className={className} {...rest}>
@@ -47,6 +53,7 @@ export function Editable({
         position: "relative",
         cursor: "pointer",
       }}
+      onClick={handleClick}
       {...rest}
     >
       {children}
