@@ -7,14 +7,14 @@ export class BuildllClient {
   serverApiKey?: string;
 
   constructor(opts: BuildllClientOptions) {
-    this.baseUrl = opts.baseUrl ?? 'https://api.buildll.com';
+    this.baseUrl = typeof window !== 'undefined' ? 'http://localhost:3000/api' : (opts.baseUrl ?? 'https://api.buildll.com');
     this.siteId = opts.siteId;
     this.publicApiKey = opts.publicApiKey;
     this.serverApiKey = opts.serverApiKey;
   }
 
   async getContent<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null> {
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json', 'x-buildll-key': this.publicApiKey ?? ''},
     });
@@ -26,7 +26,7 @@ export class BuildllClient {
   // server-side method with serverApiKey
   async getContentServer<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null> {
     if (!this.serverApiKey) throw new Error('serverApiKey required for getContentServer');
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${this.serverApiKey}` },
     });
@@ -36,9 +36,9 @@ export class BuildllClient {
   }
 
   async updateContent<T = unknown>(sectionId: string, patch: Partial<T>, writeToken: string) {
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${writeToken}`,

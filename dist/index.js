@@ -47,13 +47,13 @@ var import_react = require("react");
 // src/client.ts
 var BuildllClient = class {
   constructor(opts) {
-    this.baseUrl = opts.baseUrl ?? "https://api.buildll.com";
+    this.baseUrl = typeof window !== "undefined" ? "http://localhost:3000/api" : opts.baseUrl ?? "https://api.buildll.com";
     this.siteId = opts.siteId;
     this.publicApiKey = opts.publicApiKey;
     this.serverApiKey = opts.serverApiKey;
   }
   async getContent(sectionId) {
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
       headers: { "Accept": "application/json", "x-buildll-key": this.publicApiKey ?? "" }
     });
@@ -64,7 +64,7 @@ var BuildllClient = class {
   // server-side method with serverApiKey
   async getContentServer(sectionId) {
     if (!this.serverApiKey) throw new Error("serverApiKey required for getContentServer");
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
       headers: { "Accept": "application/json", "Authorization": `Bearer ${this.serverApiKey}` }
     });
@@ -73,9 +73,9 @@ var BuildllClient = class {
     return res.json();
   }
   async updateContent(sectionId, patch, writeToken) {
-    const url = `${this.baseUrl}/v1/sites/${this.siteId}/content/${sectionId}`;
+    const url = `${this.baseUrl}/content/${sectionId}`;
     const res = await fetch(url, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${writeToken}`
@@ -119,7 +119,7 @@ function BuildllProvider({
       window.removeEventListener("message", handleMessage);
     };
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BuildllContext.Provider, { value: { client, editorMode: !!editorMode }, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BuildllContext.Provider, { value: { client, editorMode: !!editorMode, siteId }, children });
 }
 function useBuildll() {
   const ctx = (0, import_react.useContext)(BuildllContext);
@@ -174,6 +174,7 @@ function useContent(sectionId, options) {
 }
 
 // src/components/Editable.tsx
+var import_react3 = require("react");
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function Editable({
   id,
@@ -183,15 +184,82 @@ function Editable({
   className,
   ...rest
 }) {
-  const ctx = useBuildll();
-  const isEditor = ctx.editorMode;
+  const { editorMode, siteId } = useBuildll();
+  const [isEditing, setIsEditing] = (0, import_react3.useState)(false);
+  const [content, setContent] = (0, import_react3.useState)(children);
   const handleClick = () => {
-    if (isEditor) {
-      window.parent.postMessage({ type: "buildll-edit", id, contentType: type }, "*");
+    if (editorMode) {
+      setIsEditing(true);
     }
   };
-  if (!isEditor) {
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Component, { "data-buildll-id": id, "data-buildll-type": type, className, ...rest, children });
+  const handleSave = async () => {
+    try {
+      await fetch(
+        `/api/content/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ data: content, siteId })
+        }
+      );
+    } catch (error) {
+      console.error("Error saving content:", error);
+    }
+    setIsEditing(false);
+  };
+  const handleCancel = () => {
+    setIsEditing(false);
+    setContent(children);
+  };
+  if (!editorMode) {
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+      Component,
+      {
+        "data-buildll-id": id,
+        "data-buildll-type": type,
+        className,
+        ...rest,
+        children
+      }
+    );
+  }
+  if (isEditing) {
+    if (type === "text") {
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        "input",
+        {
+          type: "text",
+          value: content,
+          onChange: (e) => setContent(e.target.value),
+          onBlur: handleSave,
+          onKeyDown: (e) => e.key === "Enter" && handleSave(),
+          autoFocus: true
+        }
+      );
+    } else if (type === "image") {
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+          "input",
+          {
+            type: "file",
+            onChange: (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  setContent(event.target?.result);
+                };
+                reader.readAsDataURL(file);
+              }
+            }
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { onClick: handleSave, children: "Save" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { onClick: handleCancel, children: "Cancel" })
+      ] });
+    }
   }
   return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
     Component,
@@ -206,7 +274,7 @@ function Editable({
       },
       onClick: handleClick,
       ...rest,
-      children
+      children: content
     }
   );
 }

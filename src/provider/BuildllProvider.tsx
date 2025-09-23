@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { buildllClient, BuildllClient } from '../client';
 import { eventBus } from '../lib/event-bus';
 
-const BuildllContext = createContext<{ client: BuildllClient; editorMode: boolean } | null>(null);
+const BuildllContext = createContext<{ client: BuildllClient; editorMode: boolean; siteId: string; } | null>(null);
 
 export function BuildllProvider({
   siteId,
@@ -34,7 +34,7 @@ export function BuildllProvider({
   }, []);
 
   return (
-    <BuildllContext.Provider value={{ client, editorMode: !!editorMode }}>
+    <BuildllContext.Provider value={{ client, editorMode: !!editorMode, siteId }}>
       {children}
     </BuildllContext.Provider>
   );
