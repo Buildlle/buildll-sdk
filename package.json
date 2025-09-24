@@ -1,7 +1,7 @@
 {
   "name": "@buildll/sdk",
-  "version": "0.1.3",
-  "description": "",
+  "version": "0.2.0",
+  "description": "Zero-boilerplate inline content editing for React/Next.js - Transform any website into an editable CMS with zero code changes",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -13,6 +13,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./plugin": {
+      "require": "./src/plugin/next-plugin-buildll.js"
     }
   },
   "scripts": {

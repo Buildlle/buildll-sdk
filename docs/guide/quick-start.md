@@ -2,72 +2,89 @@
 
 Get started with the Buildll SDK in a few simple steps.
 
-## 1. Wrap your app with BuildllProvider
+## 1. Install Buildll SDK
 
-Wrap your application with the `BuildllProvider` to provide the SDK context to your components.
+```bash
+npm install @buildll/sdk
+# or
+pnpm add @buildll/sdk
+```
+
+## 2. Add Buildll Plugin to Next.js
+
+```js
+// next.config.js
+const withBuildll = require('@buildll/sdk/plugin');
+
+module.exports = withBuildll({
+  // Your existing Next.js config
+});
+```
+
+## 3. Add Buildll Provider
+
+Wrap your application with the `BuildllProvider`:
 
 ```tsx
-// app/layout.tsx
+// app/layout.tsx (App Router) or _app.tsx (Pages Router)
 import { BuildllProvider } from '@buildll/sdk';
 
 export default function RootLayout({ children }) {
   return (
-    <BuildllProvider
-      siteId="my-site"
-      publicApiKey={process.env.NEXT_PUBLIC_BUILDLL_KEY}
-    >
-      {children}
-    </BuildllProvider>
+    <html>
+      <body>
+        <BuildllProvider
+          siteId={process.env.NEXT_PUBLIC_BUILDLL_SITE_ID}
+          publicApiKey={process.env.NEXT_PUBLIC_BUILDLL_API_KEY}
+        >
+          {children}
+        </BuildllProvider>
+      </body>
+    </html>
   );
 }
 ```
 
-## 2. Use the useContent hook
+## 4. Add Environment Variables
 
-Use the `useContent` hook to fetch content from Buildll.
-
-```tsx
-// app/page.tsx
-"use client";
-
-import { useContent } from '@buildll/sdk';
-
-export default function Page() {
-  const { data, isLoading } = useContent('hero', {
-    defaults: { title: 'Hello World' },
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return <h1>{data.title}</h1>;
-}
+```bash
+# .env.local
+NEXT_PUBLIC_BUILDLL_SITE_ID=your-site-id
+NEXT_PUBLIC_BUILDLL_API_KEY=your-api-key
 ```
 
-## 3. Make your content editable
+## 5. Write Normal JSX - That's It!
 
-Use the `Editable` components to make your content editable.
+No special components or configuration needed. Just write normal JSX:
 
 ```tsx
 // app/page.tsx
-"use client";
-
-import { useContent, EditableText } from '@buildll/sdk';
-
-export default function Page() {
-  const { data, isLoading } = useContent('hero', {
-    defaults: { title: 'Hello World' },
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
+export default function HomePage() {
   return (
-    <EditableText id="hero.title" as="h1">
-      {data.title}
-    </EditableText>
+    <div>
+      <h1>Welcome to Your Website</h1>
+      <p>This content is automatically editable in Buildll Dashboard</p>
+
+      <div className="features">
+        <div>
+          <h2>Feature One</h2>
+          <p>All text content becomes editable automatically</p>
+        </div>
+        <div>
+          <h2>Feature Two</h2>
+          <p>Zero boilerplate, zero cognitive overhead</p>
+        </div>
+      </div>
+    </div>
   );
 }
 ```
+
+## How It Works
+
+1. **Build Time**: Buildll plugin automatically detects text content and transforms it
+2. **Production**: Your site works normally with zero editing UI
+3. **Dashboard**: Load your site in Buildll Dashboard to edit content visually
+4. **Editing**: Click any text → edit inline → save → deploys automatically
+
+That's it! No manual IDs, no special components, no configuration. Just install, configure once, and code normally.

@@ -82,10 +82,9 @@ test("useContent fetches remote content and returns it", async () => {
   expect(result.current.error).toBeNull();
 });
 
-test("updateContent is available in editor mode and calls client.updateContent (optimistic update)", async () => {
+test("useContent works in editor mode (no editing functionality in SDK)", async () => {
   // initial remote content
   mockClient.getContent.mockResolvedValue({ data: { title: "Original" } });
-  mockClient.updateContent.mockResolvedValue({}); // simulate successful API update
 
   const { result } = renderHook(() => useContent("hero"), { wrapper: editorWrapper });
 
@@ -93,31 +92,22 @@ test("updateContent is available in editor mode and calls client.updateContent (
   await waitFor(() => expect(result.current.isLoading).toBe(false));
   expect(result.current.data?.title).toBe("Original");
 
-  // updateContent should be defined in editor mode
-  expect(typeof result.current.updateContent).toBe("function");
-
-  // perform update (wrap the async call in act to ensure React state is flushed)
-  await act(async () => {
-    await result.current.updateContent!({ title: "Patched Title" });
-  });
-
-  // ensure client.updateContent was called with expected args
-  expect(mockClient.updateContent).toHaveBeenCalled();
-  // first arg should be section id 'hero', second arg the patch
-  expect(mockClient.updateContent).toHaveBeenCalledWith("hero", { title: "Patched Title" }, undefined);
-
-  // optimistic update: local data should reflect patch immediately/after act
-  expect(result.current.data?.title).toBe("Patched Title");
+  // updateContent should not be available in the SDK
+  // Editing happens only in the dashboard via iframe communication
+  expect(result.current.updateContent).toBeUndefined();
 });
 
-test("updateContent is not available outside editor mode", async () => {
+test("useContent works consistently in production mode", async () => {
   mockClient.getContent.mockResolvedValue({ data: { title: "Original" } });
 
   const { result } = renderHook(() => useContent("hero"), { wrapper });
 
   await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-  // updateContent should be undefined when not in editor mode
+  // Content is fetched and displayed
+  expect(result.current.data?.title).toBe("Original");
+
+  // updateContent should be undefined - editing only happens in dashboard
   expect(result.current.updateContent).toBeUndefined();
 });
 

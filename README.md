@@ -1,44 +1,72 @@
 # Buildll SDK
 
-The official SDK for interacting with the Buildll platform.
+**Zero-boilerplate inline content editing for React/Next.js**
 
-## Installation
+Transform any website into an editable CMS with zero code changes. Just install, configure, and code normally - Buildll makes everything editable automatically.
 
-Install the package using your favorite package manager:
+## ✨ **Ultimate Developer Experience**
 
-```bash
-pnpm install @buildll/sdk
+```tsx
+// Write normal JSX - no changes needed!
+export default function HomePage() {
+  return (
+    <div>
+      <h1>Welcome to Your Website</h1>
+      <p>This content is automatically editable in Buildll Dashboard</p>
+
+      <div className="features">
+        <div>
+          <h2>Feature One</h2>
+          <p>All text content becomes editable automatically</p>
+        </div>
+        <div>
+          <h2>Feature Two</h2>
+          <p>Zero boilerplate, zero cognitive overhead</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 ```
 
-or
+That's it! No special components, no IDs, no configuration. Buildll automatically:
+- ✅ Detects all text content
+- ✅ Generates semantic content IDs
+- ✅ Makes everything editable in dashboard
+- ✅ Preserves your existing styling
+- ✅ Works with any React components
 
+## 🚀 **Installation**
+
+### 1. Install Buildll SDK
 ```bash
 npm install @buildll/sdk
+# or
+pnpm add @buildll/sdk
 ```
 
-or
+### 2. Add Buildll Plugin to Next.js
+```js
+// next.config.js
+const withBuildll = require('@buildll/sdk/plugin');
 
-```bash
-yarn add @buildll/sdk
+module.exports = withBuildll({
+  // Your existing Next.js config
+});
 ```
 
-## Usage
-
-To use the SDK, you need to wrap your application with the `BuildllProvider` and then use the `useContent` hook to fetch and manage your content.
-
-Here is an example of how to use it in a Next.js application:
-
-**`app/layout.tsx`**
+### 3. Add Buildll Provider
 ```tsx
-import { BuildllProvider } from "@buildll/sdk";
+// app/layout.tsx (App Router) or _app.tsx (Pages Router)
+import { BuildllProvider } from '@buildll/sdk';
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
         <BuildllProvider
-          siteId="your-site-id"
-          publicApiKey="your-public-api-key"
+          siteId={process.env.NEXT_PUBLIC_BUILDLL_SITE_ID}
+          publicApiKey={process.env.NEXT_PUBLIC_BUILDLL_API_KEY}
         >
           {children}
         </BuildllProvider>
@@ -48,50 +76,85 @@ export default function RootLayout({ children }) {
 }
 ```
 
-**`app/page.tsx`**
+### 4. Add Environment Variables
+```bash
+# .env.local
+NEXT_PUBLIC_BUILDLL_SITE_ID=your-site-id
+NEXT_PUBLIC_BUILDLL_API_KEY=your-api-key
+```
+
+## 🎯 **How It Works**
+
+### Build-Time Magic
+Buildll uses a build-time plugin that automatically transforms your JSX:
+
+**Before (what you write):**
 ```tsx
-"use client";
+<h1>Welcome to Your Website</h1>
+<p>This content is editable</p>
+```
 
-import { useContent, Editable, EditableText, EditableImage } from "@buildll/sdk";
+**After (what gets built):**
+```tsx
+<h1 data-buildll-id="home.hero.title" data-buildll-text="Welcome to Your Website">
+  <Text contentId="home.hero.title" fallback="Welcome to Your Website" />
+</h1>
+<p data-buildll-id="home.hero.subtitle" data-buildll-text="This content is editable">
+  <Text contentId="home.hero.subtitle" fallback="This content is editable" />
+</p>
+```
 
-const defaults = {
-  title: "My Awesome Website",
-  description: "This is the default description.",
-};
+### Production vs Dashboard
+- **Production Site**: Shows content normally, zero editing UI
+- **Buildll Dashboard**: Loads your site in iframe with editing overlay
+- **Editing**: Click any text in dashboard → edit inline → save → deploys
 
-export default function HomePage() {
-  const { data, isLoading } = useContent("home-page", { defaults });
+## 🎨 **Content Editing**
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+1. Go to [Buildll Dashboard](https://buildll.com/dashboard)
+2. Navigate to your project's `/build` tab
+3. Click any text to edit it inline
+4. Changes save automatically and deploy to your site
 
-  return (
-    <main>
-      <h1>
-        <EditableText id="home-page.title">{data.title}</EditableText>
-      </h1>
-      <p>
-        <EditableText id="home-page.description">{data.description}</EditableText>
-      </p>
-    </main>
-  );
+## 🔧 **API Reference**
+
+### BuildllProvider
+```tsx
+interface BuildllProviderProps {
+  siteId: string;          // Your site ID from Buildll Dashboard
+  publicApiKey: string;    // Your public API key
+  baseUrl?: string;        // Custom API base URL (optional)
+  children: React.ReactNode;
 }
 ```
 
-## API Reference
+### Environment Variables
+```bash
+NEXT_PUBLIC_BUILDLL_SITE_ID    # Required: Your site identifier
+NEXT_PUBLIC_BUILDLL_API_KEY    # Required: Public API key for content fetching
+```
 
-### Components
+## 🚀 **Framework Support**
 
-*   `BuildllProvider`: Provides the Buildll context to your application.
-*   `Editable`: A component that makes its children editable in the Buildll editor.
-*   `EditableText`: A component for editable text content.
-*   `EditableImage`: A component for editable image content.
+- ✅ **Next.js** (App Router & Pages Router)
+- 🔄 **React** (Coming soon)
+- 🔄 **Vite** (Coming soon)
+- 🔄 **Gatsby** (Coming soon)
 
-### Hooks
+## 📝 **Examples**
 
-*   `useContent`: A hook to fetch and manage content from the Buildll API.
+Check out the `/examples` directory for:
+- Next.js App Router example
+- Next.js Pages Router example
+- E-commerce site example
+- Blog example
 
-## License
+## 🤝 **Support**
 
-This project is licensed under the MIT License.
+- [Documentation](https://buildll.com/docs)
+- [Discord Community](https://discord.gg/buildll)
+- [GitHub Issues](https://github.com/buildll/sdk/issues)
+
+---
+
+**Made with ❤️ by the Buildll team**

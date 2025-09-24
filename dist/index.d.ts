@@ -1,5 +1,5 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
-import React from 'react';
+import React$1 from 'react';
 
 interface ContentResponse<T = unknown> {
     id: string;
@@ -22,21 +22,46 @@ declare class BuildllClient {
     siteId: string;
     publicApiKey?: string;
     serverApiKey?: string;
+    private cache;
+    private readonly CACHE_TTL;
     constructor(opts: BuildllClientOptions);
+    private getCacheKey;
+    private getCachedData;
+    private setCachedData;
+    private invalidateCache;
     getContent<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null>;
+    getBatchContent<T = unknown>(sectionIds: string[]): Promise<Record<string, ContentResponse<T> | null>>;
     getContentServer<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null>;
     updateContent<T = unknown>(sectionId: string, patch: Partial<T>, writeToken: string): Promise<any>;
+    updateBatchContent<T = unknown>(updates: Array<{
+        contentId: string;
+        data: Partial<T>;
+    }>, writeToken: string): Promise<any>;
 }
 declare function buildllClient(opts: BuildllClientOptions): BuildllClient;
 
-declare function BuildllProvider({ siteId, publicApiKey, children, editorMode, baseUrl }: {
+interface BuildllProviderProps {
     siteId: string;
     publicApiKey?: string;
-    editorMode?: boolean;
     baseUrl?: string;
-    children: React.ReactNode;
-}): react_jsx_runtime.JSX.Element;
+    children: React$1.ReactNode;
+}
+/**
+ * BuildllProvider - Production-only content provider
+ *
+ * Provides content fetching capabilities to Buildll components.
+ * NO editing functionality - purely for content display.
+ * Editing happens only in Buildll Dashboard.
+ */
+declare function BuildllProvider({ siteId, publicApiKey, baseUrl, children, }: BuildllProviderProps): react_jsx_runtime.JSX.Element;
 
+/**
+ * useContent - Production-only content hook
+ *
+ * Fetches and returns content from Buildll CMS.
+ * NO editing functionality - purely for content display.
+ * Editing happens only in Buildll Dashboard.
+ */
 declare function useContent<T = unknown>(sectionId: string, options?: {
     defaults?: T;
     revalidate?: boolean;
@@ -44,41 +69,46 @@ declare function useContent<T = unknown>(sectionId: string, options?: {
     data: T;
     isLoading: boolean;
     error: unknown;
-    updateContent: ((patch: Partial<T>, writeToken?: string) => Promise<void>) | undefined;
+};
+/**
+ * useBatchContent - Production-only batch content hook
+ *
+ * Fetches multiple content sections in a single request.
+ * NO editing functionality - purely for content display.
+ * Editing happens only in Buildll Dashboard.
+ */
+declare function useBatchContent<T = Record<string, unknown>>(sectionIds: string[], options?: {
+    defaults?: T;
+    revalidate?: boolean;
+}): {
+    data: T;
+    isLoading: boolean;
+    error: unknown;
 };
 
-/**
- * Core props shared by all Editable components.
- */
-interface EditableProps {
-    id: string;
-    type?: "text" | "image" | "video" | "richtext" | "custom";
-    as?: React.ElementType;
+interface TextProps {
+    contentId: string;
+    fallback: string;
+    className?: string;
     children?: React.ReactNode;
+}
+declare function Text({ contentId, fallback, className }: TextProps): react_jsx_runtime.JSX.Element;
+
+interface ImageProps {
+    contentId: string;
+    src: string;
+    alt: string;
+    className?: string;
+    width?: number;
+    height?: number;
+}
+declare function Image({ contentId, src, alt, className, width, height }: ImageProps): react_jsx_runtime.JSX.Element;
+
+interface RichTextProps {
+    contentId: string;
+    fallback: string;
     className?: string;
 }
-/**
- * Universal Editable component
- * - Acts as the base building block for content editing.
- * - In non-editor mode: just renders children or content.
- * - In editor mode: adds data attributes + inline styles to hook into Buildll dashboard overlays.
- */
-declare function Editable({ id, type, as: Component, children, className, ...rest }: EditableProps & {
-    [key: string]: unknown;
-}): react_jsx_runtime.JSX.Element;
-/**
- * Sugar wrappers for common content types
- * - These improve DX (developer experience) by enforcing clearer props.
- */
-/** EditableText — simple text block */
-declare function EditableText(props: Omit<EditableProps, "type" | "as">): react_jsx_runtime.JSX.Element;
-/** EditableImage — image with alt, width, height, etc. */
-declare function EditableImage({ alt, ...props }: Omit<EditableProps, "type" | "as"> & {
-    alt?: string;
-}): react_jsx_runtime.JSX.Element;
-/** EditableVideo — for video embeds */
-declare function EditableVideo(props: Omit<EditableProps, "type" | "as">): react_jsx_runtime.JSX.Element;
-/** EditableRichText — for larger text blocks */
-declare function EditableRichText(props: Omit<EditableProps, "type" | "as">): react_jsx_runtime.JSX.Element;
+declare function RichText({ contentId, fallback, className }: RichTextProps): react_jsx_runtime.JSX.Element;
 
-export { type BuildllClientOptions, BuildllProvider, type ContentResponse, Editable, EditableImage, EditableRichText, EditableText, EditableVideo, buildllClient, useContent };
+export { type BuildllClientOptions, BuildllProvider, type BuildllProviderProps, type ContentResponse, Image, type ImageProps, RichText, type RichTextProps, Text, type TextProps, buildllClient, useBatchContent, useContent };

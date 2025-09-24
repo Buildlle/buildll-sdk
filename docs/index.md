@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: Buildll SDK
-  text: The React SDK for Buildll
-  tagline: Create editable websites with ease.
+  text: Zero-boilerplate inline content editing for React/Next.js
+  tagline: Transform any website into an editable CMS with zero code changes.
   actions:
     - theme: brand
       text: Get Started
@@ -14,10 +14,10 @@ hero:
       link: https://github.com/buildll/sdk
 
 features:
-  - title: Simple to Use
-    details: Get started in minutes with our intuitive API.
-  - title: React First
-    details: Built for React and Next.js with a great developer experience.
-  - title: Server-side Rendering
-    details: SSR and ISR friendly helpers for optimal performance.
+  - title: Zero Boilerplate
+    details: Write normal JSX - no special components or IDs needed. Everything becomes editable automatically.
+  - title: Build-Time Magic
+    details: Automatic content detection and transformation using Babel plugins.
+  - title: Dashboard Editing
+    details: Edit content in Buildll Dashboard with visual click-to-edit interface.
 ---
