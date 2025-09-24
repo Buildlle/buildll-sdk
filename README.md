@@ -113,8 +113,15 @@ Buildll uses a build-time plugin that automatically transforms your JSX:
 
 1. Go to [Buildll Dashboard](https://buildll.com/dashboard)
 2. Navigate to your project's `/build` tab
-3. Click any text to edit it inline
-4. Changes save automatically and deploy to your site
+3. Your site loads in the visual editor
+4. Click any text to edit it inline
+5. Changes save automatically and deploy instantly
+
+### Visual Editor Features
+- **Click-to-edit**: Click any text element to modify it
+- **Live preview**: See changes in real-time as you edit
+- **Secure editing**: Editing only available in dashboard, production site stays clean
+- **Automatic deployment**: Changes go live immediately after saving
 
 ## 🔧 **API Reference**
 
