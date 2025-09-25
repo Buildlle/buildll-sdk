@@ -264,9 +264,6 @@ function BuildllProvider({
             // Make elements clickable
             setupElementInteractions();
 
-            // Notify parent that editor is ready
-            notifyParent('BUILDLL_READY');
-
             console.log('Buildll Editor initialized (inline)');
           }
 
@@ -424,11 +421,15 @@ function BuildllProvider({
               document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                   initializeEditor({ siteId: urlParams.get('siteId') });
+                  // Send ready message immediately for dashboard
+                  notifyParent('BUILDLL_READY');
                 }, 100);
               });
             } else {
               setTimeout(() => {
                 initializeEditor({ siteId: urlParams.get('siteId') });
+                // Send ready message immediately for dashboard
+                notifyParent('BUILDLL_READY');
               }, 100);
             }
           }
