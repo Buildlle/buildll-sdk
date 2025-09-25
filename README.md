@@ -1,167 +1,239 @@
-# Buildll SDK
+# Buildll Content Editor
 
-**Zero-boilerplate inline content editing for React/Next.js**
+**Inline content editing with persistent deployment**
 
-Transform any website into an editable CMS with zero code changes. Just install, configure, and code normally - Buildll makes everything editable automatically.
+Transform any website into an editable CMS that automatically deploys changes to your live site. Edit content through the Buildll dashboard and watch changes go live instantly.
 
-## ✨ **Ultimate Developer Experience**
+## **How It Works**
+
+### 1. Add Editor Script to Your Website
+
+Include the Buildll editor script in your website's `<head>`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://buildll.com/buildll-editor.js"></script>
+</head>
+<body>
+    <!-- Your website content -->
+</body>
+</html>
+```
+
+### 2. Mark Content as Editable
+
+Add `data-buildll-*` attributes to elements you want to be editable:
 
 ```tsx
-// Write normal JSX - no changes needed!
+// React/Next.js Example
 export default function HomePage() {
   return (
     <div>
-      <h1>Welcome to Your Website</h1>
-      <p>This content is automatically editable in Buildll Dashboard</p>
-
-      <div className="features">
-        <div>
-          <h2>Feature One</h2>
-          <p>All text content becomes editable automatically</p>
-        </div>
-        <div>
-          <h2>Feature Two</h2>
-          <p>Zero boilerplate, zero cognitive overhead</p>
-        </div>
-      </div>
+      <h1
+        data-buildll-id="hero-title"
+        data-buildll-text="Welcome to Your Website"
+        data-buildll-type="text"
+      >
+        Welcome to Your Website
+      </h1>
+      <p
+        data-buildll-id="hero-description"
+        data-buildll-text="This content is editable in Buildll Dashboard"
+        data-buildll-type="text"
+      >
+        This content is editable in Buildll Dashboard
+      </p>
     </div>
   );
 }
 ```
 
-That's it! No special components, no IDs, no configuration. Buildll automatically:
-- ✅ Detects all text content
-- ✅ Generates semantic content IDs
-- ✅ Makes everything editable in dashboard
-- ✅ Preserves your existing styling
-- ✅ Works with any React components
-
-## 🚀 **Installation**
-
-### 1. Install Buildll SDK
-```bash
-npm install @buildll/sdk
-# or
-pnpm add @buildll/sdk
+```html
+<!-- Static HTML Example -->
+<div>
+  <h1
+    data-buildll-id="hero-title"
+    data-buildll-text="Welcome to Your Website"
+    data-buildll-type="text"
+  >
+    Welcome to Your Website
+  </h1>
+  <p
+    data-buildll-id="hero-description"
+    data-buildll-text="This content is editable"
+    data-buildll-type="text"
+  >
+    This content is editable
+  </p>
+</div>
 ```
 
-### 2. Add Buildll Plugin to Next.js
-```js
-// next.config.js
-const withBuildll = require('@buildll/sdk/plugin');
+### 3. Configure Deployment (Optional)
 
-module.exports = withBuildll({
-  // Your existing Next.js config
-});
+To enable automatic deployment when content is edited:
+
+1. **GitHub Repository**: Provide your GitHub repository URL
+2. **GitHub Token**: Personal access token with `repo` permissions
+3. **Deploy Hook**: Webhook URL from Vercel/Netlify for automatic builds
+
+## **Required Attributes**
+
+Each editable element needs these attributes:
+
+- `data-buildll-id`: Unique identifier for the content element
+- `data-buildll-text`: Current text content (used for matching in repository)
+- `data-buildll-type`: Content type (currently only "text" supported)
+
+## **Content Editing Process**
+
+1. **Client opens Buildll dashboard**
+2. **Site loads in editor iframe** with visual editing overlay
+3. **Click any marked element** to open edit modal
+4. **Edit content** and save changes
+5. **Automatic deployment**:
+   - Content saved to database
+   - GitHub repository updated with new content
+   - Deploy webhook triggered (if configured)
+   - Live site updates with changes
+
+## **Deployment Flow**
+
+When content is edited and saved:
+
+```
+Content saved to database
+    ↓
+Buildll searches GitHub repository for matching text
+    ↓
+Updates found files with new content
+    ↓
+Creates git commit: "Update content via Buildll editor"
+    ↓
+Triggers deploy webhook (if configured)
+    ↓
+Hosting provider rebuilds and deploys
+    ↓
+Live website updates with new content
 ```
 
-### 3. Add Buildll Provider
-```tsx
-// app/layout.tsx (App Router) or _app.tsx (Pages Router)
-import { BuildllProvider } from '@buildll/sdk';
+## **Integration Examples**
 
-export default function RootLayout({ children }) {
+### React Component Helper
+
+```jsx
+// components/EditableText.jsx
+export function EditableText({ id, children, tag: Tag = 'p', ...props }) {
   return (
-    <html>
-      <body>
-        <BuildllProvider
-          siteId={process.env.NEXT_PUBLIC_BUILDLL_SITE_ID}
-          publicApiKey={process.env.NEXT_PUBLIC_BUILDLL_API_KEY}
-        >
-          {children}
-        </BuildllProvider>
-      </body>
-    </html>
+    <Tag
+      data-buildll-id={id}
+      data-buildll-text={children}
+      data-buildll-type="text"
+      {...props}
+    >
+      {children}
+    </Tag>
   );
 }
+
+// Usage
+<EditableText id="hero-title" tag="h1" className="text-4xl">
+  Welcome to Our Company
+</EditableText>
 ```
 
-### 4. Add Environment Variables
-```bash
-# .env.local
-NEXT_PUBLIC_BUILDLL_SITE_ID=your-site-id
-NEXT_PUBLIC_BUILDLL_API_KEY=your-api-key
-```
+### Next.js Hook
 
-## 🎯 **How It Works**
+```jsx
+// hooks/useBuildllEditable.js
+import { useEffect, useRef } from 'react';
 
-### Build-Time Magic
-Buildll uses a build-time plugin that automatically transforms your JSX:
+export function useBuildllEditable(id, text, type = 'text') {
+  const ref = useRef();
 
-**Before (what you write):**
-```tsx
-<h1>Welcome to Your Website</h1>
-<p>This content is editable</p>
-```
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.setAttribute('data-buildll-id', id);
+      ref.current.setAttribute('data-buildll-text', text);
+      ref.current.setAttribute('data-buildll-type', type);
+    }
+  }, [id, text, type]);
 
-**After (what gets built):**
-```tsx
-<h1 data-buildll-id="home.hero.title" data-buildll-text="Welcome to Your Website">
-  <Text contentId="home.hero.title" fallback="Welcome to Your Website" />
-</h1>
-<p data-buildll-id="home.hero.subtitle" data-buildll-text="This content is editable">
-  <Text contentId="home.hero.subtitle" fallback="This content is editable" />
-</p>
-```
+  return ref;
+}
 
-### Production vs Dashboard
-- **Production Site**: Shows content normally, zero editing UI
-- **Buildll Dashboard**: Loads your site in iframe with editing overlay
-- **Editing**: Click any text in dashboard → edit inline → save → deploys
-
-## 🎨 **Content Editing**
-
-1. Go to [Buildll Dashboard](https://buildll.com/dashboard)
-2. Navigate to your project's `/build` tab
-3. Your site loads in the visual editor
-4. Click any text to edit it inline
-5. Changes save automatically and deploy instantly
-
-### Visual Editor Features
-- **Click-to-edit**: Click any text element to modify it
-- **Live preview**: See changes in real-time as you edit
-- **Secure editing**: Editing only available in dashboard, production site stays clean
-- **Automatic deployment**: Changes go live immediately after saving
-
-## 🔧 **API Reference**
-
-### BuildllProvider
-```tsx
-interface BuildllProviderProps {
-  siteId: string;          // Your site ID from Buildll Dashboard
-  publicApiKey: string;    // Your public API key
-  baseUrl?: string;        // Custom API base URL (optional)
-  children: React.ReactNode;
+// Usage
+function MyComponent() {
+  const ref = useBuildllEditable('hero-title', 'Welcome');
+  return <h1 ref={ref}>Welcome</h1>;
 }
 ```
 
-### Environment Variables
-```bash
-NEXT_PUBLIC_BUILDLL_SITE_ID    # Required: Your site identifier
-NEXT_PUBLIC_BUILDLL_API_KEY    # Required: Public API key for content fetching
-```
+## **Deployment Configuration**
 
-## 🚀 **Framework Support**
+### GitHub Setup
 
-- ✅ **Next.js** (App Router & Pages Router)
-- 🔄 **React** (Coming soon)
-- 🔄 **Vite** (Coming soon)
-- 🔄 **Gatsby** (Coming soon)
+1. Create a GitHub Personal Access Token:
+   - Go to GitHub Settings > Developer settings > Personal access tokens
+   - Generate new token with `repo` scope
+   - Copy token for Buildll configuration
 
-## 📝 **Examples**
+### Hosting Provider Webhooks
 
-Check out the `/examples` directory for:
-- Next.js App Router example
-- Next.js Pages Router example
-- E-commerce site example
-- Blog example
+**For Vercel:**
+1. Project Settings > Git > Deploy Hooks
+2. Create new deploy hook
+3. Copy webhook URL
 
-## 🤝 **Support**
+**For Netlify:**
+1. Site Settings > Build & Deploy > Build Hooks
+2. Add build hook
+3. Copy webhook URL
+
+## **Troubleshooting**
+
+### Editor Shows Cross-Origin Warning
+
+**Problem**: Editor shows "Note: This site is hosted on a different domain..."
+
+**Solution**: Add the Buildll editor script to your website as shown above.
+
+### Content Changes Don't Deploy
+
+**Solutions**:
+1. Verify GitHub repository URL and token are correct
+2. Ensure `data-buildll-text` matches repository content exactly
+3. Check deploy webhook URL is configured correctly
+4. Verify GitHub token has `repo` permissions
+
+### Elements Not Clickable
+
+**Solutions**:
+1. Verify `data-buildll-*` attributes are present
+2. Check editor script is loading correctly
+3. Ensure `data-buildll-text` contains exact current text
+
+## **Best Practices**
+
+1. **Unique IDs**: Use descriptive, unique IDs for each editable element
+2. **Exact Text Matching**: Ensure `data-buildll-text` matches repository content exactly
+3. **Test Environment**: Test integration in development before production
+4. **Limited Scope**: Only make essential content editable to maintain site integrity
+5. **Backup Strategy**: Maintain backups before enabling auto-deployment
+
+## **Security Notes**
+
+- GitHub tokens are stored securely and encrypted
+- Content changes are validated before committing
+- Only authorized users can access the Buildll dashboard
+- All integrations require HTTPS for secure communication
+
+## **Support**
 
 - [Documentation](https://buildll.com/docs)
-- [Discord Community](https://discord.gg/buildll)
 - [GitHub Issues](https://github.com/buildll/sdk/issues)
 
 ---
 
-**Made with ❤️ by the Buildll team**
+**Made by the Buildll team**

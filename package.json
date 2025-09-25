@@ -1,22 +1,18 @@
 {
   "name": "@buildll/sdk",
-  "version": "0.2.10",
-  "description": "Zero-boilerplate inline content editing for React/Next.js - Transform any website into an editable CMS with zero code changes",
+  "version": "1.0.0",
+  "description": "React helpers for Buildll content editor - Optional components and hooks for adding inline content editing with persistent deployment",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "src/plugin"
+    "dist"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    },
-    "./plugin": {
-      "require": "./src/plugin/next-plugin-buildll.js"
     }
   },
   "scripts": {
@@ -56,9 +52,5 @@
     "react": ">=18",
     "react-dom": ">=18"
   },
-  "dependencies": {
-    "@babel/generator": "^7.28.3",
-    "@babel/types": "^7.28.4",
-    "mitt": "^3.0.1"
-  }
+  "dependencies": {}
 }

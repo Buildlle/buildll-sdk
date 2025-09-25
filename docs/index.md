@@ -2,22 +2,22 @@
 layout: home
 
 hero:
-  name: Buildll SDK
-  text: Zero-boilerplate inline content editing for React/Next.js
-  tagline: Transform any website into an editable CMS with zero code changes.
+  name: Buildll Content Editor
+  text: Inline content editing with persistent deployment
+  tagline: Transform any website into an editable CMS that automatically deploys changes to your live site.
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/install
+      link: /guide/quick-start
     - theme: alt
       text: View on GitHub
       link: https://github.com/buildll/sdk
 
 features:
-  - title: Zero Boilerplate
-    details: Write normal JSX - no special components or IDs needed. Everything becomes editable automatically.
-  - title: Build-Time Magic
-    details: Automatic content detection and transformation using Babel plugins.
-  - title: Dashboard Editing
-    details: Edit content in Buildll Dashboard with visual click-to-edit interface.
+  - title: Simple Integration
+    details: Add one script and data attributes to make content editable. No complex setup required.
+  - title: Persistent Deployment
+    details: Content changes automatically update your GitHub repository and deploy to your live site.
+  - title: Visual Editor
+    details: Edit content directly in Buildll Dashboard with click-to-edit interface and real-time preview.
 ---

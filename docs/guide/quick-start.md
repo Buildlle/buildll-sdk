@@ -1,90 +1,141 @@
 # Quick Start
 
-Get started with the Buildll SDK in a few simple steps.
+Get started with Buildll content editing in just a few steps.
 
-## 1. Install Buildll SDK
+## 1. Add Editor Script
 
-```bash
-npm install @buildll/sdk
-# or
-pnpm add @buildll/sdk
+Include the Buildll editor script in your website's `<head>`:
+
+```html
+<script src="https://buildll.com/buildll-editor.js"></script>
 ```
 
-## 2. Add Buildll Plugin to Next.js
+## 2. Mark Content as Editable
 
-```js
-// next.config.js
-const withBuildll = require('@buildll/sdk/plugin');
-
-module.exports = withBuildll({
-  // Your existing Next.js config
-});
-```
-
-## 3. Add Buildll Provider
-
-Wrap your application with the `BuildllProvider`:
+Add `data-buildll-*` attributes to elements you want to be editable:
 
 ```tsx
-// app/layout.tsx (App Router) or _app.tsx (Pages Router)
-import { BuildllProvider } from '@buildll/sdk';
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <BuildllProvider
-          siteId={process.env.NEXT_PUBLIC_BUILDLL_SITE_ID}
-          publicApiKey={process.env.NEXT_PUBLIC_BUILDLL_API_KEY}
-        >
-          {children}
-        </BuildllProvider>
-      </body>
-    </html>
-  );
-}
-```
-
-## 4. Add Environment Variables
-
-```bash
-# .env.local
-NEXT_PUBLIC_BUILDLL_SITE_ID=your-site-id
-NEXT_PUBLIC_BUILDLL_API_KEY=your-api-key
-```
-
-## 5. Write Normal JSX - That's It!
-
-No special components or configuration needed. Just write normal JSX:
-
-```tsx
-// app/page.tsx
+// React/Next.js Example
 export default function HomePage() {
   return (
     <div>
-      <h1>Welcome to Your Website</h1>
-      <p>This content is automatically editable in Buildll Dashboard</p>
-
-      <div className="features">
-        <div>
-          <h2>Feature One</h2>
-          <p>All text content becomes editable automatically</p>
-        </div>
-        <div>
-          <h2>Feature Two</h2>
-          <p>Zero boilerplate, zero cognitive overhead</p>
-        </div>
-      </div>
+      <h1
+        data-buildll-id="hero-title"
+        data-buildll-text="Welcome to Your Website"
+        data-buildll-type="text"
+      >
+        Welcome to Your Website
+      </h1>
+      <p
+        data-buildll-id="hero-description"
+        data-buildll-text="This content is editable in Buildll Dashboard"
+        data-buildll-type="text"
+      >
+        This content is editable in Buildll Dashboard
+      </p>
     </div>
   );
 }
 ```
 
+```html
+<!-- Static HTML Example -->
+<div>
+  <h1
+    data-buildll-id="hero-title"
+    data-buildll-text="Welcome to Your Website"
+    data-buildll-type="text"
+  >
+    Welcome to Your Website
+  </h1>
+  <p
+    data-buildll-id="hero-description"
+    data-buildll-text="This content is editable"
+    data-buildll-type="text"
+  >
+    This content is editable
+  </p>
+</div>
+```
+
+## 3. Configure Deployment (Optional)
+
+To enable automatic deployment when content is edited:
+
+1. **GitHub Repository**: Provide your GitHub repository URL in Buildll Dashboard
+2. **GitHub Token**: Create a personal access token with `repo` permissions
+3. **Deploy Hook**: Add webhook URL from Vercel/Netlify for automatic builds
+
+## Required Attributes
+
+Each editable element needs these attributes:
+
+- `data-buildll-id`: Unique identifier for the content element
+- `data-buildll-text`: Current text content (must match repository content exactly)
+- `data-buildll-type`: Content type (currently only "text" supported)
+
 ## How It Works
 
-1. **Build Time**: Buildll plugin automatically detects text content and transforms it
-2. **Production**: Your site works normally with zero editing UI
-3. **Dashboard**: Load your site in Buildll Dashboard to edit content visually
-4. **Editing**: Click any text → edit inline → save → deploys automatically
+1. **Client opens Buildll dashboard**
+2. **Site loads in editor iframe** with visual editing overlay
+3. **Click any marked element** to open edit modal
+4. **Edit content** and save changes
+5. **Automatic deployment**:
+   - Content saved to database
+   - GitHub repository updated with new content
+   - Deploy webhook triggered (if configured)
+   - Live site updates with changes
 
-That's it! No manual IDs, no special components, no configuration. Just install, configure once, and code normally.
+## Helper Components
+
+### React Component Helper
+
+```jsx
+// components/EditableText.jsx
+export function EditableText({ id, children, tag: Tag = 'p', ...props }) {
+  return (
+    <Tag
+      data-buildll-id={id}
+      data-buildll-text={children}
+      data-buildll-type="text"
+      {...props}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+// Usage
+<EditableText id="hero-title" tag="h1" className="text-4xl">
+  Welcome to Our Company
+</EditableText>
+```
+
+### Next.js Hook
+
+```jsx
+// hooks/useBuildllEditable.js
+import { useEffect, useRef } from 'react';
+
+export function useBuildllEditable(id, text, type = 'text') {
+  const ref = useRef();
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.setAttribute('data-buildll-id', id);
+      ref.current.setAttribute('data-buildll-text', text);
+      ref.current.setAttribute('data-buildll-type', type);
+    }
+  }, [id, text, type]);
+
+  return ref;
+}
+
+// Usage
+function MyComponent() {
+  const ref = useBuildllEditable('hero-title', 'Welcome');
+  return <h1 ref={ref}>Welcome</h1>;
+}
+```
+
+That's it! Your website is now ready for inline content editing with automatic deployment.

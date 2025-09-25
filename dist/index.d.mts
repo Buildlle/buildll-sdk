@@ -1,139 +1,41 @@
-import * as react_jsx_runtime from 'react/jsx-runtime';
-import React$1 from 'react';
-
-interface ContentResponse<T = unknown> {
-    id: string;
-    data: T;
-    meta?: {
-        createdAt?: string;
-        updatedAt?: string;
-        version?: number;
-    };
-}
-interface BuildllClientOptions {
-    baseUrl?: string;
-    siteId: string;
-    publicApiKey?: string;
-    serverApiKey?: string;
-}
-
-declare class BuildllClient {
-    baseUrl: string;
-    siteId: string;
-    publicApiKey?: string;
-    serverApiKey?: string;
-    private cache;
-    private readonly CACHE_TTL;
-    constructor(opts: BuildllClientOptions);
-    private getCacheKey;
-    private getCachedData;
-    private setCachedData;
-    private invalidateCache;
-    getContent<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null>;
-    getBatchContent<T = unknown>(sectionIds: string[]): Promise<Record<string, ContentResponse<T> | null>>;
-    getContentServer<T = unknown>(sectionId: string): Promise<ContentResponse<T> | null>;
-    updateContent<T = unknown>(sectionId: string, patch: Partial<T>, writeToken: string): Promise<any>;
-    updateBatchContent<T = unknown>(updates: Array<{
-        contentId: string;
-        data: Partial<T>;
-    }>, writeToken: string): Promise<any>;
-}
-declare function buildllClient(opts: BuildllClientOptions): BuildllClient;
-
-interface BuildllProviderProps {
-    siteId: string;
-    publicApiKey?: string;
-    baseUrl?: string;
-    children: React$1.ReactNode;
-}
-/**
- * BuildllProvider - Production-only content provider
- *
- * Provides content fetching capabilities to Buildll components.
- * NO editing functionality - purely for content display.
- * Editing happens only in Buildll Dashboard.
- */
-declare function BuildllProvider({ siteId, publicApiKey, baseUrl, children, }: BuildllProviderProps): react_jsx_runtime.JSX.Element;
+import * as react from 'react';
 
 /**
- * useContent - Production-only content hook
- *
- * Fetches and returns content from Buildll CMS.
- * NO editing functionality - purely for content display.
- * Editing happens only in Buildll Dashboard.
+ * Props interface for EditableText component
  */
-declare function useContent<T = unknown>(sectionId: string, options?: {
-    defaults?: T;
-    revalidate?: boolean;
-}): {
-    data: T;
-    isLoading: boolean;
-    error: unknown;
-};
-/**
- * useBatchContent - Production-only batch content hook
- *
- * Fetches multiple content sections in a single request.
- * NO editing functionality - purely for content display.
- * Editing happens only in Buildll Dashboard.
- */
-declare function useBatchContent<T = Record<string, unknown>>(sectionIds: string[], options?: {
-    defaults?: T;
-    revalidate?: boolean;
-}): {
-    data: T;
-    isLoading: boolean;
-    error: unknown;
-};
-
-interface TextProps {
-    contentId: string;
-    fallback: string;
-    className?: string;
-    children?: React.ReactNode;
-}
-declare function Text({ contentId, fallback, className }: TextProps): react_jsx_runtime.JSX.Element;
-
-interface ImageProps {
-    contentId: string;
-    src: string;
-    alt: string;
-    className?: string;
-    width?: number;
-    height?: number;
-}
-declare function Image({ contentId, src, alt, className, width, height }: ImageProps): react_jsx_runtime.JSX.Element;
-
-interface RichTextProps {
-    contentId: string;
-    fallback: string;
-    className?: string;
-}
-declare function RichText({ contentId, fallback, className }: RichTextProps): react_jsx_runtime.JSX.Element;
-
 interface EditableTextProps {
+    /** Unique identifier for the content element */
     id: string;
-    children: React.ReactNode;
+    /** Text content */
+    children: string;
+    /** HTML tag to render (default: 'p') */
+    tag?: keyof React.JSX.IntrinsicElements;
+    /** CSS class name */
     className?: string;
-    as?: React.ElementType;
+    /** Additional props passed to the element */
+    [key: string]: any;
 }
 /**
- * Manual EditableText component for when the Babel plugin fails
- * This provides a fallback for zero-boilerplate editing
+ * React hook for adding Buildll editable attributes to elements
+ *
+ * @param id - Unique identifier for the content element
+ * @param text - Current text content (must match repository content exactly)
+ * @param type - Content type (default: 'text')
+ * @returns React ref to attach to your element
  */
-declare function EditableText({ id, children, className, as: Component }: EditableTextProps): react_jsx_runtime.JSX.Element;
-
-interface EditableImageProps {
-    id: string;
-    src: string;
-    alt: string;
-    className?: string;
-    width?: number;
-    height?: number;
-}
+declare function useBuildllEditable(id: string, text: string, type?: string): react.RefObject<HTMLElement | null>;
 /**
- * Manual EditableImage component for when the Babel plugin fails
+ * React component that renders editable text with required Buildll attributes
+ *
+ * @param props - EditableTextProps
+ * @returns JSX element with data-buildll-* attributes
  */
-declare function EditableImage({ id, src, alt, className, width, height }: EditableImageProps): react_jsx_runtime.JSX.Element;
+declare function EditableText({ id, children, tag, ...props }: EditableTextProps): react.ReactElement<{
+    /** CSS class name */
+    className?: string;
+    'data-buildll-id': string;
+    'data-buildll-text': string;
+    'data-buildll-type': string;
+}, string | react.JSXElementConstructor<any>>;
 
-export { type BuildllClientOptions, BuildllProvider, type BuildllProviderProps, type ContentResponse, EditableImage, type EditableImageProps, EditableText, type EditableTextProps, Image, type ImageProps, RichText, type RichTextProps, Text, type TextProps, buildllClient, useBatchContent, useContent };
+export { EditableText, type EditableTextProps, useBuildllEditable };
