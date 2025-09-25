@@ -503,8 +503,56 @@ function RichText({ contentId, fallback, className }) {
     }
   );
 }
+
+// src/components/manual/EditableText.tsx
+import { jsx as jsx5 } from "react/jsx-runtime";
+function EditableText({
+  id,
+  children,
+  className,
+  as: Component = "span"
+}) {
+  const textContent = typeof children === "string" ? children : "";
+  return /* @__PURE__ */ jsx5(
+    Component,
+    {
+      className,
+      "data-buildll-id": id,
+      "data-buildll-text": textContent,
+      "data-buildll-type": "text",
+      children
+    }
+  );
+}
+
+// src/components/manual/EditableImage.tsx
+import { jsx as jsx6 } from "react/jsx-runtime";
+function EditableImage({
+  id,
+  src,
+  alt,
+  className,
+  width,
+  height
+}) {
+  return /* @__PURE__ */ jsx6(
+    "img",
+    {
+      src,
+      alt,
+      className,
+      width,
+      height,
+      "data-buildll-id": id,
+      "data-buildll-src": src,
+      "data-buildll-type": "image"
+    }
+  );
+}
 export {
   BuildllProvider,
+  EditableImage,
+  EditableText,
   Image,
   RichText,
   Text,
@@ -512,3 +560,4 @@ export {
   useBatchContent,
   useContent
 };
+//# sourceMappingURL=index.mjs.map

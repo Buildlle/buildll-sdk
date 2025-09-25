@@ -111,4 +111,29 @@ interface RichTextProps {
 }
 declare function RichText({ contentId, fallback, className }: RichTextProps): react_jsx_runtime.JSX.Element;
 
-export { type BuildllClientOptions, BuildllProvider, type BuildllProviderProps, type ContentResponse, Image, type ImageProps, RichText, type RichTextProps, Text, type TextProps, buildllClient, useBatchContent, useContent };
+interface EditableTextProps {
+    id: string;
+    children: React.ReactNode;
+    className?: string;
+    as?: React.ElementType;
+}
+/**
+ * Manual EditableText component for when the Babel plugin fails
+ * This provides a fallback for zero-boilerplate editing
+ */
+declare function EditableText({ id, children, className, as: Component }: EditableTextProps): react_jsx_runtime.JSX.Element;
+
+interface EditableImageProps {
+    id: string;
+    src: string;
+    alt: string;
+    className?: string;
+    width?: number;
+    height?: number;
+}
+/**
+ * Manual EditableImage component for when the Babel plugin fails
+ */
+declare function EditableImage({ id, src, alt, className, width, height }: EditableImageProps): react_jsx_runtime.JSX.Element;
+
+export { type BuildllClientOptions, BuildllProvider, type BuildllProviderProps, type ContentResponse, EditableImage, type EditableImageProps, EditableText, type EditableTextProps, Image, type ImageProps, RichText, type RichTextProps, Text, type TextProps, buildllClient, useBatchContent, useContent };

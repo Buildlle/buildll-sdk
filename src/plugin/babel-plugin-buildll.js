@@ -1,8 +1,13 @@
-const { default: generate } = require('@babel/generator');
+const generate = require('@babel/generator').default;
 
 module.exports = function buildllBabelPlugin({ types: t }) {
   let contentCounter = 0;
   let fileContentMap = new Map();
+
+  // Handle SSR/build-time environment detection
+  function isServerSide() {
+    return typeof window === 'undefined';
+  }
 
   function generateContentId(filePath, elementType, textContent) {
     // Extract filename without extension
@@ -110,51 +115,19 @@ module.exports = function buildllBabelPlugin({ types: t }) {
         );
 
         // Replace text content with Text component
-        const textElement = t.jSXElement(
-          t.jSXOpeningElement(
-            t.jSXIdentifier('Text'),
-            [
-              t.jSXAttribute(
-                t.jSXIdentifier('contentId'),
-                t.stringLiteral(contentId)
-              ),
-              t.jSXAttribute(
-                t.jSXIdentifier('fallback'),
-                t.stringLiteral(textContent)
-              )
-            ]
-          ),
-          t.jSXClosingElement(t.jSXIdentifier('Text')),
-          [],
-          true
+        // Only add data attributes, don't replace with Text component to avoid import issues
+        node.openingElement.attributes.push(
+          t.jSXAttribute(
+            t.jSXIdentifier('data-buildll-type'),
+            t.stringLiteral('text')
+          )
         );
-
-        // Replace the text child with Text component
-        const textChildIndex = node.children.indexOf(textChild);
-        node.children[textChildIndex] = textElement;
       },
 
       Program: {
         exit(path, state) {
-          // Add Text import if any transformations were made
-          const hasTransformations = path.traverse({
-            JSXElement(innerPath) {
-              const { node } = innerPath;
-              if (node.openingElement.name.name === 'Text') {
-                return true;
-              }
-            }
-          });
-
-          if (hasTransformations) {
-            // Add import for Text
-            const importDeclaration = t.importDeclaration(
-              [t.importSpecifier(t.identifier('Text'), t.identifier('Text'))],
-              t.stringLiteral('@buildll/sdk')
-            );
-
-            path.unshiftContainer('body', importDeclaration);
-          }
+          // No longer adding automatic imports to avoid compatibility issues
+          // Manual components (EditableText, EditableImage) should be used as fallback
         }
       }
     }

@@ -21,6 +21,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var index_exports = {};
 __export(index_exports, {
   BuildllProvider: () => BuildllProvider,
+  EditableImage: () => EditableImage,
+  EditableText: () => EditableText,
   Image: () => Image,
   RichText: () => RichText,
   Text: () => Text,
@@ -535,9 +537,57 @@ function RichText({ contentId, fallback, className }) {
     }
   );
 }
+
+// src/components/manual/EditableText.tsx
+var import_jsx_runtime5 = require("react/jsx-runtime");
+function EditableText({
+  id,
+  children,
+  className,
+  as: Component = "span"
+}) {
+  const textContent = typeof children === "string" ? children : "";
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    Component,
+    {
+      className,
+      "data-buildll-id": id,
+      "data-buildll-text": textContent,
+      "data-buildll-type": "text",
+      children
+    }
+  );
+}
+
+// src/components/manual/EditableImage.tsx
+var import_jsx_runtime6 = require("react/jsx-runtime");
+function EditableImage({
+  id,
+  src,
+  alt,
+  className,
+  width,
+  height
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+    "img",
+    {
+      src,
+      alt,
+      className,
+      width,
+      height,
+      "data-buildll-id": id,
+      "data-buildll-src": src,
+      "data-buildll-type": "image"
+    }
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BuildllProvider,
+  EditableImage,
+  EditableText,
   Image,
   RichText,
   Text,
@@ -545,3 +595,4 @@ function RichText({ contentId, fallback, className }) {
   useBatchContent,
   useContent
 });
+//# sourceMappingURL=index.js.map
