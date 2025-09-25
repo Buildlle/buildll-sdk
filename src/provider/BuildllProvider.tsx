@@ -56,6 +56,20 @@ export function BuildllProvider({
 
           // Initialize editor when parent sends init message
           window.addEventListener('message', function(event) {
+            // Allow messages from Buildll dashboard origins
+            const allowedOrigins = [
+              'https://www.buildll.com',
+              'https://buildll.com',
+              'http://localhost:3000',
+              'http://localhost:3001'
+            ];
+
+            // Skip origin check for same-origin messages or allowed origins
+            if (event.origin !== window.location.origin &&
+                !allowedOrigins.includes(event.origin)) {
+              return;
+            }
+
             const { type, data } = event.data;
 
             switch (type) {
@@ -213,6 +227,21 @@ export function BuildllProvider({
           }
 
           function notifyParent(type, data = null) {
+            // Send to all possible Buildll dashboard origins
+            const targetOrigins = [
+              'https://www.buildll.com',
+              'https://buildll.com'
+            ];
+
+            targetOrigins.forEach(origin => {
+              try {
+                window.parent.postMessage({ type, data }, origin);
+              } catch (e) {
+                // Silent fail if origin is not accessible
+              }
+            });
+
+            // Also send to wildcard as fallback
             window.parent.postMessage({ type, data }, '*');
           }
 
